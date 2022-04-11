@@ -1,51 +1,43 @@
 import gym
 import matplotlib.pyplot as plt
 import random
+import keras
+from baselines.common.atari_wrappers import make_atari, wrap_deepmind
 
 from FramePreprocess import FramePreprocess
 from ExperienceReplay import ExperienceReplay
-
-def greedy(q_vals):
-    """
-    Picks the action with the largest Q value
-    """
-
-    max_val = max(q_vals)
-    indices = [i for i, x in enumerate(q_vals) if x == max_val]
-
-    return random.choice(indices)
+from DQN import DQN
 
 
-def eps_greedy(q_vals):
-    """
-    Picks the action with the largest Q value with a probability of 1-epsilon
-    """
+# NOTES:
+# How would multi frame states work with GANs?
+# Can GANs produce exactly the same frames they are fed?
 
-    eps = 0.1
-
-    if random.random() > eps:
-        return greedy(q_vals)
-    else:
-        return random.randint(0, 2)
-
-
+# split the frames on positive/other rewards
+# no need for 4 dimension states for gans
+# idea: only generate positive states from gans
+# pytorch/keras gan tutorials cifr10
 def main():
-    env = gym.make('ALE/Breakout-v5', obs_type = "grayscale", full_action_space=False)#, render_mode="human")
-    env = FramePreprocess(env)
-    # 1 useless action?
-    # print(env.action_space)
+    #env = gym.make('ALE/Breakout-v5', obs_type = "grayscale", full_action_space=False)#, render_mode="human")
+    #env = FramePreprocess(env)
+    env = make_atari("BreakoutNoFrameskip-v4")
+    # Warp the frames, grey scale, stake four frame and scale to smaller ratio
+    env = wrap_deepmind(env, frame_stack=True, scale=True)
+    env.seed(42)
+    #print(env.action_space)
     #print(env.observation_space.shape)
-    # print(env.unwrapped.get_action_meanings())
+    #print(env.unwrapped.get_action_meanings())
     #help(env.unwrapped)
     exp_replay = ExperienceReplay()
 
     env.reset()
-    for _ in range(50):
-        action = env.action_space.sample()
-        frame, reward, done, _ = env.step(action)
-        exp_replay.add_experience(frame, action, reward, done)
+    
+    # for _ in range(50):
+    #     action = env.action_space.sample()
+    #     frame, reward, done, _ = env.step(action)
+        #if reward == 1: keep frame for GAN training
+        #exp_replay.add_experience(frame, action, reward, done)
 
-    #st, a, r, st1, d = exp_replay.sample_experiences()
 
 if __name__ == "__main__":
     main()

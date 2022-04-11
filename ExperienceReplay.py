@@ -28,14 +28,18 @@ class ExperienceReplay(object):
         self.count += 1
 
     def get_state(self, index):
-        
-        # !Often raises error
-        if index >= STATE_LEN:
+    
+        if index >= STATE_LEN - 1:
             state = self.frames[index-STATE_LEN+1 : index+1]
             return state
-       # else:
-        #    raise ValueError("Index is too small")
+        else:
+            print(index)
+            raise ValueError("Index is too small")
 
+    #  QUESTIONS: 
+    # Other conditions for frame picking?
+    # Random sampling for GANs? no need
+    # Reward schema for the states? pick max reward out of the frames
     def pick_batch_members(self):
         """
         Creates a random selection of valid observations to use in a minibatch.
@@ -55,20 +59,21 @@ class ExperienceReplay(object):
                 if candidate_idx in indices:
                     conditions = False
 
-                # It is not desirable to create a state out of frames that led to the end of an episode.
+                # It is not desirable to create a state out of frames from different episodes
                 if self.done[candidate_idx-STATE_LEN : candidate_idx].any() is True:
                     conditions = False
-
-                # other conditions?
+                
+                if candidate_idx >= self.idx and candidate_idx - STATE_LEN <= self.idx:
+                    conditions = False
 
             indices[i] = candidate_idx
         
         return indices
-
+    
     def sample_experiences(self):
         
         indices = self.pick_batch_members()
-        #print(indices)
+
         states_t = np.empty((BATCH_SIZE, STATE_LEN, 84, 84), dtype=np.uint8)
         states_t1 = np.empty((BATCH_SIZE, STATE_LEN, 84, 84), dtype=np.uint8)
         actions = np.empty(BATCH_SIZE, dtype=np.uint8)
@@ -80,8 +85,8 @@ class ExperienceReplay(object):
             states_t[i] = self.get_state(j - 1)
             states_t1[i] = self.get_state(j)
             actions[i] = self.actions[j]
-            rewards[i] = self.rewards[j]
+            #rewards[i] = self.rewards[j]
+            rewards[i] = max(self.rewards[j-STATE_LEN+1 : j+1])
             done[i] = self.done[j]
         
-        # reshaping for GANs?
         return states_t, actions, rewards, states_t1, done
