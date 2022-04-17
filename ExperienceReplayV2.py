@@ -1,5 +1,4 @@
 import numpy as np
-import random
 import tensorflow as tf
 
 BATCH_SIZE = 32
@@ -34,8 +33,8 @@ class ExperienceReplay(object):
         indices = np.random.choice(range(len(self.rewards)), size=BATCH_SIZE)
 
         states_sample = np.array([self.states[i] for i in indices])
-        actions_sample = np.array([self.actions[i] for i in indices])
-        rewards_sample = np.array([self.rewards[i] for i in indices])
+        actions_sample = [self.actions[i] for i in indices]
+        rewards_sample = [self.rewards[i] for i in indices]
         states_next_sample = np.array([self.states_next[i] for i in indices])
         dones_sample = tf.convert_to_tensor([float(self.dones[i]) for i in indices])
 

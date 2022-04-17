@@ -40,7 +40,6 @@ def create_q_model():
 
     return keras.Model(inputs=inputs, outputs=action)
 
-
 # The first model makes the predictions for Q-values which are used to
 # make a action.
 model = create_q_model()
@@ -53,12 +52,6 @@ model_target = create_q_model()
 # improves training time
 optimizer = keras.optimizers.Adam(learning_rate=0.00025, clipnorm=1.0)
 
-# Experience replay buffers
-# action_history = []
-# state_history = []
-# state_next_history = []
-# rewards_history = []
-# done_history = []
 episode_reward_history = []
 running_reward = 0
 episode_count = 0
@@ -66,16 +59,19 @@ frame_count = 0
 # Number of frames to take random action and observe output
 epsilon_random_frames = 500
 # Number of frames for exploration
-epsilon_greedy_frames = 10000
+epsilon_greedy_frames = 100000
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
-max_replay_memory = 100000
+max_replay_memory = 10000
 # Train the model after 4 actions
 update_after_actions = 4
 # How often to update the target network
 update_target_network = 1000
 # Using huber loss for stability
 loss_function = keras.losses.Huber()
+
+# Frames that led to a positive reward
+successful_frames = []
 
 exp_replay = ExperienceReplay(max_replay_memory)
 
@@ -84,7 +80,7 @@ while True:  # Run until solved
     episode_reward = 0
 
     for timestep in range(1, max_steps_per_episode):
-        env.render()
+        #env.render()
         # of the agent in a pop up window.
         frame_count += 1
 
@@ -111,13 +107,12 @@ while True:  # Run until solved
 
         episode_reward += reward
 
+        # Save the frames that led to a positive reward for GAN training
+        if reward == 1:
+            successful_frames.append(state)
+
         # Save actions and states in replay buffer
         exp_replay.add_experience(state, action, reward, state_next, done)
-        # action_history.append(action)
-        # state_history.append(state)
-        # state_next_history.append(state_next)
-        # done_history.append(done)
-        # rewards_history.append(reward)
         state = state_next
 
         # Update every fourth frame and once batch size is over 32
@@ -130,9 +125,7 @@ while True:  # Run until solved
             # Use the target model for stability
             future_rewards = model_target.predict(states_next_sample)
             # Q value = reward + discount factor * expected future reward
-            updated_q_values = rewards_sample + gamma * tf.reduce_max(
-                future_rewards, axis=1
-            )
+            updated_q_values = rewards_sample + gamma * tf.reduce_max(future_rewards, axis=1)
 
             # If final frame set the last value to -1
             updated_q_values = updated_q_values * (1 - dones_sample) - dones_sample
@@ -159,6 +152,7 @@ while True:  # Run until solved
             # Log details
             template = "running reward: {:.2f} at episode {}, frame count {}"
             print(template.format(running_reward, episode_count, frame_count))
+            #env.render()
 
         if done:
             break
@@ -171,7 +165,9 @@ while True:  # Run until solved
 
     episode_count += 1
 
-    if running_reward > 40:  # Condition to consider the task solved
-        print("Solved at episode {}!".format(episode_count))
+    if running_reward > 20:  # Condition to consider the task solved
+        print(f"Solved at episode {episode_count}!")
         env.render()
         break
+
+np.save("succesful_frames.npy", np.array(successful_frames))
