@@ -63,6 +63,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+import matplotlib.pyplot as plt
 
 # Configuration paramaters for the whole setup
 seed = 42
@@ -158,6 +159,13 @@ update_target_network = 10000
 # Using huber loss for stability
 loss_function = keras.losses.Huber()
 
+successful_frames = []
+
+episodes = []
+
+np.save("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/graph_data/rewards.npy", np.array(episodes))
+np.save("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/graph_data/epsiodes.npy", np.array(episodes))
+
 while True:  # Run until solved
     state = np.array(env.reset())
     episode_reward = 0
@@ -189,6 +197,9 @@ while True:  # Run until solved
         state_next = np.array(state_next)
 
         episode_reward += reward
+        # Save the frames that led to a positive reward for GAN training
+        if reward == 1:
+            successful_frames.append(state)
 
         # Save actions and states in replay buffer
         action_history.append(action)
@@ -255,6 +266,20 @@ while True:  # Run until solved
             del action_history[:1]
             del done_history[:1]
 
+        # Save the successful frames every 10.000 episodes
+        np.save(f"C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/train_GAN/successful_frames{episode_count}.npy", np.array(successful_frames))
+        successful_frames = []
+
+        # Save info for graphing later
+        rewards = np.load("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/graph_data/rewards.npy")
+        rewards = np.append(rewards, running_reward)
+        np.save("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/graph_data/rewards.npy", rewards)
+
+        episodes = np.load("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/graph_data/epsiodes.npy")
+        episodes = np.append(episodes, episode_count)
+        np.save("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/graph_data/epsiodes.npy", episodes)
+        #env.render()
+
         if done:
             break
 
@@ -270,14 +295,18 @@ while True:  # Run until solved
         print("Solved at episode {}!".format(episode_count))
         break
 
-"""
-## Visualizations
-Before any training:
-![Imgur](https://i.imgur.com/rRxXF4H.gif)
+    if episode_count % 100 == 0:
+        print(f"Episode {episode_count} finished with running reward {running_reward}")
+    
+    # Save the model every 10.000 episodes
+    if episode_count % 10000 == 0:
+        model.save(f"C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/models/model{episode_count}.h5")
 
-In early stages of training:
-![Imgur](https://i.imgur.com/X8ghdpL.gif)
+model.save(f"C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/models/model_done.h5")
 
-In later stages of training:
-![Imgur](https://i.imgur.com/Z1K6qBQ.gif)
-"""
+rewards = np.load("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/graph_data/rewards.npy")
+episodes = np.load("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/graph_data/epsiodes.npy")
+plt.plot(rewards, episodes)
+plt.plot(rewards, episodes, "or")
+plt.show()
+plt.savefig("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/rewards.png")

@@ -1,11 +1,6 @@
 
 # QUESTIONS:
-# atari_wrapper ok?
-# very slow: 80.000 frames - 6 hours training time - reward 0.37
-# Peregrine needed?
-# .npy good for saving frames for GAN training?
 
-# Collections (deque) for replay buffer
 
 from baselines.common.atari_wrappers import make_atari, wrap_deepmind
 import numpy as np
