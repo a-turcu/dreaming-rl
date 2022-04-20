@@ -67,7 +67,7 @@ epsilon_random_frames = 5000
 epsilon_greedy_frames = 1000000
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
-max_replay_memory = 100000
+max_replay_memory = 10000
 # Train the model after 4 actions
 update_after_actions = 4
 # How often to update the target network
@@ -118,7 +118,7 @@ while True:  # Run until solved
         episode_reward += reward
 
         # Save the frames that led to a positive reward for GAN training
-        if reward == 1:
+        if reward == 1 and frame_count > 400000:
             successful_frames.append(state)
 
         # Save actions and states in replay buffer
@@ -164,8 +164,9 @@ while True:  # Run until solved
             print(template.format(running_reward, episode_count, frame_count))
             
             # Save the successful frames every 10.000 episodes
-            np.save(f"{path}train_GAN/successful_frames{episode_count}.npy", np.array(successful_frames))
-            successful_frames = []
+            if len(successful_frames) > 0:
+                np.save(f"{path}train_GAN/successful_frames{episode_count}.npy", np.array(successful_frames))
+                successful_frames = []
 
             # Save info for graphing later
             rewards = np.load(path + "graph_data/rewards.npy")
@@ -192,7 +193,7 @@ while True:  # Run until solved
 
     if running_reward > 40:  # Condition to consider the task solved
         print(f"Solved at episode {episode_count}!")
-        env.render()
+        #env.render()
         break
 
     # Save the model every 10.000 episodes

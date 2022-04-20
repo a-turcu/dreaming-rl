@@ -67,7 +67,7 @@ epsilon_random_frames = 5000
 epsilon_greedy_frames = 1000000
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
-max_replay_memory = 100000
+max_replay_memory = 10000
 # Train the model after 4 actions
 update_after_actions = 4
 # How often to update the target network

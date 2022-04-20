@@ -16,11 +16,11 @@ class ExperienceReplay(object):
         
         # make space for new experience
         if len(self.rewards) > self.capacity:
-            self.states.pop(0)
-            self.actions.pop(0)
-            self.rewards.pop(0)
-            self.states_next.pop(0)
-            self.dones.pop(0)
+            del self.states[:1]
+            del self.actions[:1]
+            del self.rewards[:1]
+            del self.states_next[:1]
+            del self.dones[:1]
 
         self.states.append(state)
         self.actions.append(action)
