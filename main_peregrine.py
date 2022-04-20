@@ -79,7 +79,7 @@ loss_function = keras.losses.Huber()
 successful_frames = []
 
 episodes = []
-path = "/data/s3972445/.envs/first_env/collected_data/"
+path = "/data/s3972445/.envs/pyenv37/collected_data/"
 
 np.save(path + "graph_data/rewards.npy", np.array(episodes))
 np.save(path + "graph_data/epsiodes.npy", np.array(episodes))
