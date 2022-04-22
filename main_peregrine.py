@@ -25,7 +25,7 @@ max_steps_per_episode = 10000
 # Use the Baseline Atari environment because of Deepmind helper functions
 env = make_atari("BreakoutNoFrameskip-v4")
 # Warp the frames, grey scale, stake four frame and scale to smaller ratio
-env = wrap_deepmind(env, frame_stack=True, scale=True)
+env = wrap_deepmind(env, clip_rewards=False, frame_stack=True, scale=True)
 env.seed(seed)
 
 num_actions = 4
@@ -115,11 +115,12 @@ while True:  # Run until solved
         # Apply the sampled action in our environment
         state_next, reward, done, _ = env.step(action)
         state_next = np.array(state_next)
-
         episode_reward += reward
-
+        # Only clip the reward after counting it towards the metrics
+        reward = np.sign(reward)
+        
         # Save the frames that led to a positive reward for GAN training
-        if reward == 1 and frame_count > 400000:
+        if reward == 1:
             successful_frames.append(state)
 
         # Save actions and states in replay buffer
@@ -165,9 +166,9 @@ while True:  # Run until solved
             print(template.format(running_reward, episode_count, frame_count))
             
             # Save the successful frames every 10.000 episodes
-            if len(successful_frames) > 0:
+            if running_reward > 30:
                 np.save(f"{path}train_GAN/successful_frames{episode_count}.npy", np.array(successful_frames))
-                successful_frames = []
+            successful_frames = []
 
             # Save info for graphing later
             rewards = np.load(path + "graph_data/rewards.npy")
@@ -189,10 +190,8 @@ while True:  # Run until solved
     running_reward = np.mean(episode_reward_history)
 
     episode_count += 1
-    if episode_count % 100 == 0:
-        print(f"Episode {episode_count} finished with running reward {running_reward}")
 
-    if running_reward > 40:  # Condition to consider the task solved
+    if running_reward > 100:  # Condition to consider the task solved
         print(f"Solved at episode {episode_count}!")
         #env.render()
         break

@@ -1,8 +1,8 @@
 
 # QUESTIONS:
 
-
-from baselines.common.atari_wrappers import make_atari, wrap_deepmind
+#from baselines.common.atari_wrappers import make_atari, wrap_deepmind
+from atari_wrappers import make_atari, wrap_deepmind
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -24,7 +24,7 @@ max_steps_per_episode = 10000
 # Use the Baseline Atari environment because of Deepmind helper functions
 env = make_atari("BreakoutNoFrameskip-v4")
 # Warp the frames, grey scale, stake four frame and scale to smaller ratio
-env = wrap_deepmind(env, frame_stack=True, scale=True)
+env = wrap_deepmind(env, frame_stack=True, clip_rewards=False, scale=True)
 env.seed(seed)
 
 num_actions = 4
@@ -64,7 +64,7 @@ frame_count = 0
 # Number of frames to take random action and observe output
 epsilon_random_frames = 5000
 # Number of frames for exploration
-epsilon_greedy_frames = 1000000
+epsilon_greedy_frames = 100000
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
 max_replay_memory = 10000
@@ -113,8 +113,9 @@ while True:  # Run until solved
         # Apply the sampled action in our environment
         state_next, reward, done, _ = env.step(action)
         state_next = np.array(state_next)
-
         episode_reward += reward
+        # Only clip the reward after counting it towards the metrics
+        reward = np.sign(reward)
 
         # Save the frames that led to a positive reward for GAN training
         if reward == 1:
@@ -162,8 +163,9 @@ while True:  # Run until solved
             template = "running reward: {:.2f} at episode {}, frame count {}"
             print(template.format(running_reward, episode_count, frame_count))
             
-            # Save the successful frames every 10.000 episodes
-            np.save(f"C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/train_GAN/successful_frames{episode_count}.npy", np.array(successful_frames))
+            # Save the successful frames every 10.000 episodes if the reward is high enough
+            if running_reward > 30:
+                np.save(f"C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/train_GAN/ep{episode_count}_rr{running_reward}.npy", np.array(successful_frames))
             successful_frames = []
 
             # Save info for graphing later
@@ -178,7 +180,7 @@ while True:  # Run until solved
 
         if done:
             break
-
+    
     # Update running reward to check condition for solving
     episode_reward_history.append(episode_reward)
     if len(episode_reward_history) > 100:
@@ -186,12 +188,10 @@ while True:  # Run until solved
     running_reward = np.mean(episode_reward_history)
 
     episode_count += 1
-    if episode_count % 100 == 0:
-        print(f"Episode {episode_count} finished with running reward {running_reward}")
 
-    if running_reward > 40:  # Condition to consider the task solved
+    if running_reward > 200:  # Condition to consider the task solved
         print(f"Solved at episode {episode_count}!")
-        env.render()
+        #env.render()
         break
 
     # Save the model every 10.000 episodes
