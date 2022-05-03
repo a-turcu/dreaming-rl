@@ -14,10 +14,11 @@ import matplotlib.pyplot as plt
 import sys
 
 import numpy as np
+path = "/data/s3972445/.envs/pyenv37/collected_data/"
 
 def save_graph_data(data, type):
     name = {"d_loss": "d_losses.npy", "acc": "accs.npy", "g_loss": "g_losses.npy", "epoch": "epochs.npy"}
-    path = "C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/GAN_data/performance_graph/"
+    path = path + "performance_graph/"
     x = np.load(path + name[type])
     x = np.append(x, data)
     np.save(path + name[type], x)
@@ -117,8 +118,8 @@ class DCGAN():
     def train(self, epochs, batch_size=128, save_interval=50):
 
         # Load the dataset
-        path = "C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/GAN_data/all_successful_frames.npy"
-        X_train = np.load(path)
+        #path = "C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/GAN_data/all_successful_frames.npy"
+        X_train = np.load(path + "all_successful_frames.npy")
         #print(X_train.shape)
         X_train.resize(X_train.shape[0], 28, 28, 1)
         #(X_train, _), (_, _) = mnist.load_data()
@@ -135,10 +136,10 @@ class DCGAN():
         d_losses = []
         accs = []
         g_losses = []
-        np.save("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/GAN_data/performance_graph/epochs.npy", epoch_list)
-        np.save("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/GAN_data/performance_graph/d_losses.npy", d_losses)
-        np.save("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/GAN_data/performance_graph/g_losses.npy", g_losses)
-        np.save("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/GAN_data/performance_graph/accs.npy", accs)
+        np.save(path + "performance_graph/epochs.npy", epoch_list)
+        np.save(path + "performance_graph/d_losses.npy", d_losses)
+        np.save(path + "performance_graph/g_losses.npy", g_losses)
+        np.save(path + "performance_graph/accs.npy", accs)
 
         for epoch in range(epochs):
 
@@ -201,12 +202,12 @@ class DCGAN():
                 axs[i,j].axis('off')
                 cnt += 1
        
-        fig.savefig("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/GAN_data/GAN_images/breakout_%d.png" % epoch)
+        fig.savefig(path + "GAN_images/breakout_%d.png" % epoch)
         plt.close()
 
 
 if __name__ == '__main__':
     dcgan = DCGAN()
     dcgan.train(epochs=10000, batch_size=32, save_interval=1000)
-    dcgan.discriminator.save("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/GAN_data/discriminator.h5")
-    dcgan.generator.save("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/GAN_data/generator.h5")
+    dcgan.discriminator.save(path + "models/discriminator.h5")
+    dcgan.generator.save(path + "models/generator.h5")
