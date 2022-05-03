@@ -3,6 +3,7 @@
 
 
 #from baselines.common.atari_wrappers import make_atari, wrap_deepmind
+from collections import deque
 from atari_wrappers import make_atari, wrap_deepmind
 import numpy as np
 import tensorflow as tf
@@ -58,7 +59,7 @@ model_target = create_q_model()
 # improves training time
 optimizer = keras.optimizers.Adam(learning_rate=0.00025, clipnorm=1.0)
 
-episode_reward_history = []
+episode_reward_history = deque([])
 running_reward = 0
 episode_count = 0
 frame_count = 0
@@ -186,7 +187,7 @@ while True:  # Run until solved
     # Update running reward to check condition for solving
     episode_reward_history.append(episode_reward)
     if len(episode_reward_history) > 100:
-        del episode_reward_history[:1]
+        episode_reward_history.pop()
     running_reward = np.mean(episode_reward_history)
 
     episode_count += 1
