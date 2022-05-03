@@ -168,7 +168,7 @@ while True:  # Run until solved
             
             # Save the successful frames every 10.000 episodes
             if running_reward > 30:
-                np.save(f"{path}train_GAN/successful_frames{episode_count}.npy", np.array(successful_frames))
+                np.save(f"{path}train_GAN/ep{episode_count}_rr{running_reward}.npy", np.array(successful_frames))
             successful_frames = []
 
             # Save info for graphing later
