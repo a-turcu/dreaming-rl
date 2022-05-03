@@ -1,0 +1,13 @@
+Reward performance:
+1. Breakout score benchmark: How good should the agent be?
+2. Lowered experience memory replay -> helped with training time, maybe worse score?
+
+Peregrine:
+1. Lots of memory usage -> bad algorithm design or normal? 50GB -> 26h
+2. Any way of showing progress while running?
+
+GAN:
+1. Which GAN should I choose?
+2. Latent dim size?
+3. How much data for training? (19800 current frames)
+4. Output shape bug (wrong input shape)

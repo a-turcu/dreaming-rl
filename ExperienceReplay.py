@@ -1,3 +1,4 @@
+from collections import deque
 import numpy as np
 import tensorflow as tf
 
@@ -6,21 +7,23 @@ BATCH_SIZE = 32
 class ExperienceReplay(object):
     def __init__(self, capacity = 10000):
         self.capacity = capacity
-        self.states = []
-        self.actions = []
-        self.rewards = []
-        self.states_next = []
-        self.dones = []
+        self.states = deque([])
+        self.actions = deque([])
+        self.rewards = deque([])
+        self.states_next = deque([])
+        self.dones = deque([])
 
     def add_experience(self, state, action, reward, state_next, done):
         
         # make space for new experience
+        # improve this
+        # dequeue collections
         if len(self.rewards) > self.capacity:
-            del self.states[:1]
-            del self.actions[:1]
-            del self.rewards[:1]
-            del self.states_next[:1]
-            del self.dones[:1]
+            self.states.pop()
+            self.actions.pop()
+            self.rewards.pop()
+            self.states_next.pop()
+            self.dones.pop()
 
         self.states.append(state)
         self.actions.append(action)

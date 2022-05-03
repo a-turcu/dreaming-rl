@@ -10,7 +10,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import matplotlib.pyplot as plt
 
-from ExperienceReplayV2 import ExperienceReplay
+from ExperienceReplay import ExperienceReplay
 
 # Configuration paramaters for the whole setup
 seed = 42
