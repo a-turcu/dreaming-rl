@@ -167,7 +167,9 @@ class DCGAN():
             g_loss = self.combined.train_on_batch(noise, valid)
 
             # Plot the progress
-            print ("%d [D loss: %f, acc.: %.2f%%] [G loss: %f]" % (epoch, d_loss[0], 100*d_loss[1], g_loss))
+            if epoch % 100 == 0:
+                print ("%d [D loss: %f, acc.: %.2f%%] [G loss: %f]" % (epoch, d_loss[0], 100*d_loss[1], g_loss))
+            
             epoch_list.append(epoch)
             d_losses.append(d_loss[0])
             accs.append(100*d_loss[1])
@@ -206,7 +208,7 @@ class DCGAN():
 
 
 if __name__ == '__main__':
-    dcgan = DCGAN()
-    dcgan.train(epochs=10000, batch_size=32, save_interval=1000)
+    dcgan = DCGAN() 
+    dcgan.train(epochs=1000000, batch_size=32, save_interval=10000)
     dcgan.discriminator.save("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/GAN_data/discriminator.h5")
     dcgan.generator.save("C:/Users/alexa/Documents/RUG/Year 3/Bachelor Project/GAN_data/generator.h5")
